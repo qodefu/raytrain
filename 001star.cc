@@ -1,21 +1,7 @@
-#include <bits/stdc++.h>
-#include <raylib.h>
-#include <raymath.h>
-
+#include "common.cc"
 static float width;
 static float height;
 
-float rand_float() {
-    return (float) rand() / (float)RAND_MAX;
-}
-
-float map(float v, float s1, float e1, float s2, float e2) {
-    return v *(e2 - s2)/( e1 - s1 );
-}
-
-int random(int start, int end) {
-    return start + (rand() % (start - end));
-}
 
 
 Vector2 project_sample_to_screen(float x, float y) {
@@ -51,14 +37,14 @@ struct star {
     }
 
     void show() {
-        float sx = map(x/z, 0, 1, 0, width);
-        float sy = map(y/z, 0, 1, 0, height);
+        float sx = map_range(x/z, 0, 1, 0, width);
+        float sy = map_range(y/z, 0, 1, 0, height);
 
-        float ox = map(x/pz, 0, 1, 0, width);
-        float oy = map(y/pz, 0, 1, 0, height);
+        float ox = map_range(x/pz, 0, 1, 0, width);
+        float oy = map_range(y/pz, 0, 1, 0, height);
         Vector2 opt = project_sample_to_screen(ox, oy);
         Vector2 npt = project_sample_to_screen(sx, sy);
-        float r = map(z, 0, width, 4, 0);
+        float r = map_range(z, 0, width, 4, 0);
 
         DrawLine(opt.x, opt.y, npt.x, npt.y, WHITE);
         DrawEllipse(npt.x, npt.y, r, r, WHITE);

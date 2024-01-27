@@ -4,7 +4,7 @@
 #include <rlgl.h>
 #include "lighting.cc"
 
-#define RADIUS 6.0f
+#define RADIUS 4.0f
 #define BOX_RADIUS 3.0f
 
 using namespace std;
@@ -54,8 +54,7 @@ struct Box {
 };
 
 int main() {
-    TextFormat("blah");
-    InitWindow(800, 800, "menger");
+    InitWindow(1280, 720, "menger");
     shader = LoadShaderFromMemory(lighting_vs.c_str(), lighting_fs.c_str());
 
     // Get some required shader locations
@@ -82,6 +81,7 @@ int main() {
 
 
     SetTargetFPS(30);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     while(!WindowShouldClose()) {
 
         a += 0.2;

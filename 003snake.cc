@@ -1,30 +1,7 @@
-#include <bits/stdc++.h>
-#include <raylib.h>
-#include <raymath.h>
+#include "common.cc"
 #define SNAKE_RADIUS 20
 
-using namespace std;
 
-static float width;
-static float height;
-
-float rand_float() {
-    return (float) rand() / (float)RAND_MAX;
-}
-
-float map(float v, float s1, float e1, float s2, float e2) {
-    return v *(e2 - s2)/( e1 - s1 );
-}
-
-int random(int start, int end) {
-    return start + (rand() % (start - end));
-}
-
-ostream& operator<< (ostream& os,
-                     const Vector2& pt) {
-    os << "{"<< pt.x << "," << pt.y << ","<< "}";
-    return os;
-}
 
 float round_radius(float v) {
     float ret = v;
@@ -36,55 +13,6 @@ float round_radius(float v) {
     return ret;
 }
 
-Vector2 dimension() {
-    width = GetScreenWidth();
-    height = GetScreenHeight();
-    return Vector2{width, height};
-}
-
-Vector2 project_sample_to_screen(float x, float y) {
-
-   return (Vector2) {
-     .x = x + (width /2),
-     .y = y + (height/2),
-   };
-
-}
-
-
-struct snake {
-
-    float x;
-    float y;
-    float dx = 1;
-    float dy = 0;
-    std::deque<Vector2> body;
-    snake() {
-        auto dim = dimension();
-        x = round_radius(dim.x/2);
-        y = round_radius(dim.y/2);
-        grow();
-    }
-
-    void grow() {
-        body.push_front(Vector2{x,y});
-    }
-    void update() {
-        x += dx*SNAKE_RADIUS;
-        y += dy*SNAKE_RADIUS;
-        body.push_front(Vector2{x,y});
-        body.pop_back();
-    }
-
-    void show() {
-        for (auto vec2: body) {
-            DrawRectangle(vec2.x, vec2.y, SNAKE_RADIUS, SNAKE_RADIUS, WHITE);
-            cout << vec2 << " ";
-        }
-        cout << endl;
-    }
-
-};
 
 
 struct food {
@@ -107,13 +35,75 @@ struct food {
     }
 };
 
-void check_eating(snake &snk, food &foodie) {
-    if (snk.x == foodie.x && snk.y == foodie.y) {
-        snk.grow();
-        foodie.next();
+
+struct snake {
+
+    float x;
+    float y;
+    float dx = 1;
+    float dy = 0;
+    std::deque<Vector2> body;
+    Vector2 dim;
+    snake() {
+        dim = dimension();
+        x = round_radius(dim.x/2);
+        y = round_radius(dim.y/2);
+        grow();
     }
 
-}
+    void grow() {
+        body.push_front(Vector2{x,y});
+    }
+
+    void checkDeath() {
+        bool dead = false;
+        for (auto v: body) {
+            if (x == v.x && y == v.y) {
+                cout << "hit body, end game!!!";
+                dead =true;
+            }
+        }
+        if (x <0 || x >= dim.x || y >= dim.y || y < 0) {
+            cout << "hit wall, end game!!";
+            dead=true;
+        }
+        if (dead) {
+            x = round_radius(dim.x/2);
+            y = round_radius(dim.y/2);
+
+            body.clear();
+            grow();
+
+        }
+    }
+    void update() {
+        x += dx*SNAKE_RADIUS;
+        y += dy*SNAKE_RADIUS;
+        checkDeath();
+        x = Clamp(x, 0, dim.x - SNAKE_RADIUS);
+        y = Clamp(y, 0, dim.y - SNAKE_RADIUS);
+        body.push_front(Vector2{x,y});
+        body.pop_back();
+    }
+    void eat(food &foodie) {
+        if (x == foodie.x && y == foodie.y) {
+            grow();
+            foodie.next();
+        }
+
+    }
+
+    void show() {
+        for (auto vec2: body) {
+            DrawRectangle(vec2.x, vec2.y, SNAKE_RADIUS, SNAKE_RADIUS, WHITE);
+//            cout << vec2 << " ";
+        }
+//        cout << endl;
+    }
+
+};
+
+
 
 int main(void)  {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -156,7 +146,7 @@ int main(void)  {
             SetTargetFPS(fps);
 
         }
-        check_eating(snake, food);
+        snake.eat(food);
         snake.update();
         snake.show();
         food.show();
